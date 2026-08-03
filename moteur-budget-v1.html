@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cockpit Budget Hebdo</title>
+<style>
+  :root {
+    --bg: #0B0E11; --card: #14181D; --border: #1D232B; --border2: #232830;
+    --text: #F5F6F7; --text2: #8B92A0; --text3: #5C6370; --text4: #3A414C;
+    --green: #4ADE9A; --gold: #C9A876; --gray: #8B92A0; --blue: #6BA8FF; --pink: #E08FA0; --red: #E2544A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    background: var(--bg); color: var(--text); margin: 0;
+    padding: 20px 16px 60px; max-width: 440px; margin-inline: auto;
+    -webkit-font-smoothing: antialiased;
+  }
+  #app { opacity: 0; transition: opacity .35s; }
+  #app.mounted { opacity: 1; }
+  .row { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; margin-bottom: 8px; }
+  .section-title { font-size: 10.5px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin: 24px 0 10px; }
+  .section-title:first-of-type { margin-top: 0; }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .badge { background: rgba(107,168,255,.12); color: var(--blue); border-radius: 6px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
+  .hero-label { font-size: 12.5px; color: var(--text2); margin-bottom: 6px; }
+  .hero-amount { font-size: 46px; font-weight: 600; letter-spacing: -1.2px; line-height: 1; }
+  .hero-sub { font-size: 11.5px; color: var(--text3); margin-top: 8px; }
+  .banner { border-radius: 16px; padding: 16px; margin-bottom: 22px; }
+  .banner.warn { background: rgba(226,84,74,.08); border: 1px solid rgba(226,84,74,.25); }
+  .banner-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--red); }
+  .banner-body { font-size: 12px; color: #B8BEC8; line-height: 1.5; margin-bottom: 10px; }
+  .banner-alt { font-size: 12px; color: var(--text2); background: var(--card); border-radius: 10px; padding: 10px 12px; }
+  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
+  .card3 { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 10px; }
+  .card3-name { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; font-size: 10.5px; color: var(--text2); }
+  .dot { width: 6px; height: 6px; border-radius: 3px; }
+  .card3-amt { font-size: 19px; font-weight: 600; }
+  .card3-delta { font-size: 10.5px; margin-top: 2px; }
+  .mgauge { display: flex; align-items: center; gap: 12; gap: 12px; }
+  .lgauge-track { height: 7px; background: #20262E; border-radius: 4px; overflow: hidden; width: 100%; }
+  .lgauge-fill { height: 100%; border-radius: 4px; transition: width .6s; }
+  .tx { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+  .tx-row { display: flex; justify-content: space-between; font-size: 11.5px; padding: 3px 0; color: var(--text2); }
+  .tx-empty { font-size: 11px; color: var(--text4); margin-top: 8px; }
+  .pole-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .pole-name { font-size: 14.5px; font-weight: 500; }
+  .pole-amt { font-size: 15px; font-weight: 500; }
+  .pole-amt small { font-size: 11px; color: var(--text3); font-weight: 400; }
+  .tag-adj { font-size: 10px; color: var(--red); background: rgba(226,84,74,.12); border-radius: 5px; padding: 1.5px 6px; margin-left: 6px; }
+  .mois-note { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+  .pole-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11.5px; }
+  .banner-mini { display: flex; gap: 8px; border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 12.5px; }
+  .banner-mini.good { background: rgba(74,222,154,.1); border: 1px solid rgba(74,222,154,.25); color: #B8E8CE; }
+  .banner-mini.bad { background: rgba(226,84,74,.08); border: 1px solid rgba(226,84,74,.22); color: #E8B8B8; }
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 12px 6px; margin-bottom: 8px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; padding: 0 4px; }
+  .chart-title { font-size: 12.5px; color: #B8BEC8; font-weight: 500; }
+  .chart-warn { font-size: 9.5px; color: var(--text3); display: flex; align-items: center; gap: 3px; }
+  .chart-foot { font-size: 10.5px; color: var(--text4); padding: 0 0 8px 4px; }
+  .info-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-top: 8px; font-size: 12px; color: var(--text2); display: flex; gap: 8px; }
+  svg text { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const DATA = **DATA_PLACEHOLDER**;
+
+const fmt = (n) => (n === null || n === undefined) ? "—" : Math.round(n).toLocaleString("fr-FR");
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ---- icônes SVG minimales (pas de dépendance npm) ----
+const ICONS = {
+  alert: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  sparkles: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg>`,
+  info: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+  chevron: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A414C" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`,
+};
+
+// ---- jauge circulaire SVG ----
+function ring(pct, color, size = 44, stroke = 4) {
+  pct = Math.max(0, Math.min(100, pct || 0));
+  const r = (size - stroke) / 2, c = 2 * Math.PI * r, off = c - (pct / 100) * c;
+  return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg);flex-shrink:0">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#20262E" stroke-width="${stroke}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
+      stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round"/>
+  </svg>`;
+}
+
+// ---- jauge linéaire ----
+function lgauge(pct, color) {
+  pct = Math.max(0, Math.min(100, pct || 0));
+  return `<div class="lgauge-track"><div class="lgauge-fill" style="width:${pct}%;background:${color}"></div></div>`;
+}
+
+// ---- mini courbe SVG (aire + points + labels valeurs), pas de dépendance npm ----
+function areaChart(points, color, width = 400, height = 80) {
+  const vals = points.map(p => p.montant).filter(v => v != null);
+  if (vals.length === 0) return `<div style="height:${height}px;display:flex;align-items:center;justify-content:center;color:#3A414C;font-size:11px">Aucune donnée</div>`;
+  const max = Math.max(...vals, 1), min = 0;
+  const padTop = 20, padBottom = 6, padX = 10;
+  const innerH = height - padTop - padBottom;
+  const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
+  const coords = points.map((p, i) => {
+    const x = padX + i * step;
+    const y = p.montant == null ? null : padTop + innerH - ((p.montant - min) / (max - min || 1)) * innerH;
+    return { x, y, v: p.montant };
+  });
+  const valid = coords.filter(c => c.y != null);
+  let path = "", area = "";
+  if (valid.length > 1) {
+    path = "M" + valid.map(c => `${c.x},${c.y}`).join(" L");
+    area = path + ` L${valid[valid.length-1].x},${height-padBottom} L${valid[0].x},${height-padBottom} Z`;
+  }
+  const gradId = "grad" + Math.round(Math.random()*1e6);
+  const dots = valid.map(c => `
+    <circle cx="${c.x}" cy="${c.y}" r="2.6" fill="${color}" stroke="#0B0E11" stroke-width="1.2"/>
+    <text x="${c.x}" y="${c.y - 8}" text-anchor="middle" font-size="9" font-weight="500" fill="#8B92A0">${Math.round(c.v)}</text>
+  `).join("");
+  return `<svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${valid.length > 1 ? `<path d="${area}" fill="url(#${gradId})"/><path d="${path}" fill="none" stroke="${color}" stroke-width="2"/>` : ""}
+    ${dots}
+  </svg>`;
+}
+
+function txList(txs) {
+  if (!txs || txs.length === 0) return `<div class="tx-empty">Aucune transaction sur cette période.</div>`;
+  return `<div class="tx">${txs.map(t => `
+    <div class="tx-row"><span>${esc(t.m)} <span style="color:#3A414C">· ${esc(t.d)}</span></span><span class="tabular">${t.v.toFixed(2)} €</span></div>
+  `).join("")}</div>`;
+}
+
+function bravoBanner(pole) {
+  if (pole.contraint || !pole.bravo || !pole.bravo.actif) return "";
+  return `<div class="banner-mini good">${ICONS.sparkles}<span><strong style="color:var(--green)">Bravo</strong> : ${esc(pole.bravo.texte)}</span></div>`;
+}
+function absorptionBanner(pole) {
+  if (pole.absorbe) return `<div class="banner-mini bad">${ICONS.alert}<span>-${fmt(pole.absorbe)} € absorbés suite au dépassement du pôle Autres cette semaine.</span></div>`;
+  if (pole.absorbe_ailleurs) return `<div class="banner-mini bad">${ICONS.alert}<span>Dépassement de ${fmt(pole.absorbe_ailleurs)} € absorbé sur Loisirs & sorties.</span></div>`;
+  return "";
+}
+
+function breakevenBanner(b) {
+  if (!b || !b.actif) return "";
+  return `<div class="banner warn">
+    <div class="banner-title">${ICONS.alert}<span>Mois tendu — budgets ajustés</span></div>
+    <div class="banner-body">Disponible réel : ${fmt(b.disponible)} € pour ${fmt(b.besoin_plafond)} € de plafonds théoriques restants. Certains pôles sont réduits ci-dessous plutôt que de laisser croire à un budget qui n'existe pas.</div>
+    <div class="banner-alt">Alternative : prélever <strong style="color:var(--text)">${fmt(b.montant_epargne_alternatif)} €</strong> de l'épargne existante pour garder tous les budgets à leur plafond normal ce mois-ci.</div>
+  </div>`;
+}
+
+function render() {
+  const d = DATA;
+  const budgetHebdoTotal = d.poles_hebdo.reduce((s, p) => s + p.budget_venir, 0);
+
+  const html = `
+    <div class="head">
+      <div style="font-size:11px;color:var(--text3)">Bilan ${esc(d.meta.semaine_ecoulee_label)} · Budget ${esc(d.meta.semaine_a_venir_label)}</div>
+      <span class="badge">DONNÉES RÉELLES</span>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div class="hero-label">Après prélèvements du mois</div>
+      <div class="hero-amount tabular" style="color:${d.solde.apres_prelevements < 0 ? 'var(--red)' : 'var(--text)'}">
+        ${fmt(d.solde.apres_prelevements)} <span style="font-size:24px;color:var(--text3);font-weight:500">€</span>
+      </div>
+      <div class="hero-sub">${fmt(d.solde.montant_brut)} € au ${esc(d.solde.date_releve)} · Budget hebdo ${esc(d.meta.semaine_a_venir_label)} : ${fmt(budgetHebdoTotal)} €</div>
+    </div>
+
+    ${breakevenBanner(d.breakeven)}
+
+    <div class="row" style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+      ${ring(Math.round(d.epargne_mois.restant / d.epargne_mois.objectif * 100), d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--red)')}
+      <div style="flex:1">
+        <div style="font-size:14.5px;font-weight:500">Épargne — objectif du mois</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">Premier poste sacrifié par la cascade, premier reconstitué par un surplus</div>
+      </div>
+      <div style="font-size:16px;font-weight:500;color:${d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--red)'}" class="tabular">
+        ${fmt(d.epargne_mois.restant)} € <span style="font-size:11px;color:var(--text3);font-weight:400">/ ${fmt(d.epargne_mois.objectif)} €</span>
+      </div>
+    </div>
+
+    <div class="cards3">
+      ${d.poles_hebdo.map(p => {
+        const delta = p.budget_venir - p.base;
+        return `<div class="card3">
+          <div class="card3-name"><div class="dot" style="background:${p.color}"></div>${esc(p.name)}</div>
+          <div class="card3-amt tabular">${fmt(p.budget_venir)} €</div>
+          ${delta !== 0 ? `<div class="card3-delta" style="color:${delta > 0 ? 'var(--green)' : 'var(--red)'}">${delta > 0 ? '+' : ''}${fmt(delta)} €</div>` : ""}
+        </div>`;
+      }).join("")}
+    </div>
+
+    <div class="section-title">Budgets mensuels — ${esc(d.meta.mois_label)}</div>
+    ${d.poles_mensuels.map(p => {
+      const pct = Math.round(p.spent_mois / p.cap * 100);
+      const left = p.cap - p.spent_mois;
+      return `<div class="row">
+        <div style="display:flex;align-items:center;gap:12px">
+          ${ring(pct, p.color)}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14.5px;font-weight:500">${esc(p.name)}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap)} € · ${d.meta.jours_restants_mois}j restants</div>
+          </div>
+          <div style="font-size:16px;font-weight:500" class="tabular">${fmt(left)} €</div>
+          ${ICONS.chevron}
+        </div>
+        ${txList(p.txs)}
+      </div>`;
+    }).join("")}
+
+    <div class="section-title">Pôles hebdo — bilan ${esc(d.meta.semaine_ecoulee_label)} &amp; budget à venir</div>
+    ${d.poles_hebdo.map(p => {
+      const pctSemaine = Math.round(p.spent_last / p.base * 100);
+      const over = p.spent_last > p.base;
+      const pctMois = Math.round(p.spent_mois / p.cap_mensuel * 100);
+      return `<div class="row">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          ${ring(pctMois, p.color, 36, 3.5)}
+          <div style="flex:1">
+            <div style="font-size:11.5px;color:var(--text2)">Consommation mensuelle</div>
+            <div style="font-size:11.5px;color:var(--text3)" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap_mensuel)} € ce mois-ci</div>
+          </div>
+        </div>
+        <div class="pole-head">
+          <span class="pole-name">${esc(p.name)}${p.contraint ? '<span class="tag-adj">ajusté</span>' : ''}</span>
+          <span class="pole-amt tabular">${fmt(p.budget_venir)} € <small>à venir</small></span>
+        </div>
+        ${p.breakeven_mensuel_restant != null ? `<div class="mois-note">soit ${fmt(p.breakeven_mensuel_restant)} € restants sur le mois ÷ ${d.meta.semaines_restantes_mois} semaines</div>` : ""}
+        ${lgauge(pctSemaine, over ? 'var(--red)' : p.color)}
+        <div class="pole-meta">
+          <span style="color:${over ? 'var(--red)' : 'var(--text3)'}">${fmt(p.spent_last)} € / ${fmt(p.base)} € la semaine passée${over ? ' — dépassé' : ''}</span>
+          ${(!over && p.surplus > 0)
+            ? `<span style="color:var(--green);font-weight:500">+${fmt(p.surplus)} € économisés</span>`
+            : `<span style="color:${over ? 'var(--red)' : 'var(--green)'};font-weight:500">${pctSemaine}%</span>`}
+        </div>
+        ${bravoBanner(p)}
+        ${absorptionBanner(p)}
+        ${txList(p.txs)}
+      </div>`;
+    }).join("")}
+    ${(d.libres || []).map(l => `<div class="row" style="display:flex;align-items:center;gap:10px">
+      <div style="width:4px;height:24px;border-radius:2px;background:var(--text4)"></div>
+      <div style="flex:1;font-size:13.5px;color:var(--text2)">${esc(l.name)} <span style="font-size:10.5px">· sans plafond</span></div>
+      <div style="font-size:13px;color:var(--text3)">${fmt(l.spent)} €</div>
+    </div>`).join("")}
+
+    <div class="section-title">Courbes de dépenses par poste</div>
+    ${d.courbes_depenses.map(c => `<div class="chart-card">
+      <div class="chart-head">
+        <span class="chart-title">${esc(c.label)}</span>
+        ${c.points.filter(p => p.montant != null).length < 3 ? `<span class="chart-warn">${ICONS.info}historique limité</span>` : ""}
+      </div>
+      ${areaChart(c.points, c.color)}
+      ${c.footnote ? `<div class="chart-foot">${esc(c.footnote)}</div>` : ""}
+    </div>`).join("")}
+
+    ${!d.courbe_economies ? `<div class="info-box">${ICONS.info}<span>Pas encore assez d'historique réel pour une courbe d'économies ou un streak fiable. Ces blocs reviendront dès que quelques semaines de bilan seront accumulées.</span></div>` : ""}
+  `;
+
+  document.getElementById("app").innerHTML = html;
+  requestAnimationFrame(() => document.getElementById("app").classList.add("mounted"));
+}
+
+render();
+</script>
+</body>
+</html>
