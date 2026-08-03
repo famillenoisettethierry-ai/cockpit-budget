@@ -168,14 +168,33 @@ function render() {
     </div>
 
     <div style="margin-bottom:16px">
-      <div class="hero-label">Après prélèvements du mois</div>
-      <div class="hero-amount tabular" style="color:${d.solde.apres_prelevements < 0 ? 'var(--red)' : 'var(--text)'}">
-        ${fmt(d.solde.apres_prelevements)} <span style="font-size:24px;color:var(--text3);font-weight:500">€</span>
+      <div class="hero-label">Solde après prélèvements et entrées</div>
+      <div class="hero-amount tabular" style="font-size:40px;color:${d.solde_paliers.palier1 < 0 ? 'var(--red)' : 'var(--text)'}">
+        ${fmt(d.solde_paliers.palier1)} <span style="font-size:21px;color:var(--text3);font-weight:500">€</span>
       </div>
-      <div class="hero-sub">${fmt(d.solde.montant_brut)} € au ${esc(d.solde.date_releve)} · Budget hebdo ${esc(d.meta.semaine_a_venir_label)} : ${fmt(budgetHebdoTotal)} €</div>
+      <div class="hero-sub">${fmt(d.solde_paliers.solde_actuel)} € au ${esc(d.solde_paliers.date_releve)} · +${fmt(d.solde_paliers.entrees_connues)} € (${esc(d.solde_paliers.entrees_label)}) · -${fmt(d.solde_paliers.prelevements_restants)} € de prélèvements restants</div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin:14px 0 6px">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <span style="font-size:10px;color:var(--text4)">− ${fmt(d.solde_paliers.budgets_pleins)} € si tous les budgets sont financés pleins</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>
+
+      <div class="hero-label">Solde après budgets pleins</div>
+      <div class="hero-amount tabular" style="font-size:34px;color:var(--red)">
+        ${fmt(d.solde_paliers.palier2)} <span style="font-size:18px;color:var(--text3);font-weight:500">€</span>
+      </div>
     </div>
 
-    ${breakevenBanner(d.breakeven)}
+    ${d.solde_paliers.palier2 < 0 ? `<div class="banner warn">
+      <div class="banner-title">${ICONS.alert}<span>Pour éviter le découvert, deux options</span></div>
+      <div style="font-size:12px;color:#B8BEC8;background:var(--card);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+        <strong style="color:var(--text)">Option A — Budgets réduits</strong> (détail plus bas) : voir pastilles "ajusté" sur les pôles concernés. Ramène le solde à l'équilibre.
+      </div>
+      <div style="font-size:12px;color:#B8BEC8;background:var(--card);border-radius:10px;padding:10px 12px">
+        <strong style="color:var(--text)">Option B — Puiser dans l'épargne</strong> : prélever <strong style="color:var(--text)">${fmt(Math.abs(d.solde_paliers.palier2))} €</strong> pour garder tous les budgets à leur plafond normal.
+      </div>
+    </div>` : ""}
 
     <div class="row" style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
       ${ring(Math.round(d.epargne_mois.restant / d.epargne_mois.objectif * 100), d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--red)')}
