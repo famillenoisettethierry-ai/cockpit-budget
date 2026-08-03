@@ -210,10 +210,13 @@ function render() {
     <div class="cards3">
       ${d.poles_hebdo.map(p => {
         const delta = p.budget_venir - p.base;
+        const hasResteReel = p.spent_week != null;
+        const resteReel = hasResteReel ? p.budget_venir - p.spent_week : null;
         return `<div class="card3">
           <div class="card3-name"><div class="dot" style="background:${p.color}"></div>${esc(p.name)}</div>
           <div class="card3-amt tabular">${fmt(p.budget_venir)} €</div>
           ${delta !== 0 ? `<div class="card3-delta" style="color:${delta > 0 ? 'var(--green)' : 'var(--red)'}">${delta > 0 ? '+' : ''}${fmt(delta)} €</div>` : ""}
+          ${hasResteReel ? `<div class="card3-delta tabular" style="color:${resteReel < 0 ? 'var(--red)' : 'var(--text3)'};margin-top:3px">${fmt(resteReel)} € reste réel</div>` : ""}
         </div>`;
       }).join("")}
     </div>
@@ -254,6 +257,18 @@ function render() {
           <span class="pole-amt tabular">${fmt(p.budget_venir)} € <small>à venir</small></span>
         </div>
         ${p.breakeven_mensuel_restant != null ? `<div class="mois-note">soit ${fmt(p.breakeven_mensuel_restant)} € restants sur le mois ÷ ${d.meta.semaines_restantes_mois} semaines</div>` : ""}
+        ${p.spent_week != null ? (() => {
+          const resteReel = p.budget_venir - p.spent_week;
+          const pctWeek = p.budget_venir > 0 ? Math.round(p.spent_week / p.budget_venir * 100) : (p.spent_week > 0 ? 100 : 0);
+          const overWeek = resteReel < 0;
+          return `<div class="mois-note" style="color:${overWeek ? 'var(--red)' : 'var(--text2)'}">${fmt(p.spent_week)} € déjà dépensés cette semaine → reste réel <strong>${fmt(resteReel)} €</strong></div>
+          ${lgauge(pctWeek, overWeek ? 'var(--red)' : p.color)}
+          <div class="pole-meta" style="margin-bottom:12px">
+            <span style="color:${overWeek ? 'var(--red)' : 'var(--text3)'}">${fmt(p.spent_week)} € / ${fmt(p.budget_venir)} € cette semaine${overWeek ? ' — dépassé' : ''}</span>
+            <span style="color:${overWeek ? 'var(--red)' : 'var(--text3)'};font-weight:500">${pctWeek}%</span>
+          </div>`;
+        })() : ""}
+        <div class="mois-note" style="color:var(--text3);opacity:.75">Bilan de la semaine passée :</div>
         ${lgauge(pctSemaine, over ? 'var(--red)' : p.color)}
         <div class="pole-meta">
           <span style="color:${over ? 'var(--red)' : 'var(--text3)'}">${fmt(p.spent_last)} € / ${fmt(p.base)} € la semaine passée${over ? ' — dépassé' : ''}</span>
