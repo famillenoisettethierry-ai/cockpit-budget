@@ -134,7 +134,7 @@ function areaChart(points, color, width = 400, height = 80) {
 function txList(txs) {
   if (!txs || txs.length === 0) return `<div class="tx-empty">Aucune transaction sur cette période.</div>`;
   return `<div class="tx">${txs.map(t => `
-    <div class="tx-row"><span>${esc(t.m)} <span style="color:#3A414C">· ${esc(t.d)}</span></span><span class="tabular">${t.v.toFixed(2)} €</span></div>
+    <div class="tx-row"><span>${esc(t.m)} <span style="color:#3A414C">· ${esc(t.d)}</span>${t.n ? ` <span style="color:#8A93A3">· ${esc(t.n)}</span>` : ''}</span><span class="tabular">${t.v.toFixed(2)} €</span></div>
   `).join("")}</div>`;
 }
 
@@ -260,15 +260,17 @@ function render() {
     <div class="section-title">Budgets mensuels — ${esc(d.meta.mois_label)}</div>
     ${d.poles_mensuels.map(p => {
       const pct = Math.round(p.spent_mois / p.cap * 100);
-      const left = p.cap - p.spent_mois;
+      const contraint = p.restant_reel != null;
+      const left = contraint ? p.restant_reel : (p.cap - p.spent_mois);
       return `<div class="row">
         <div style="display:flex;align-items:center;gap:12px">
           ${ring(pct, p.color)}
           <div style="flex:1;min-width:0">
-            <div style="font-size:14.5px;font-weight:500">${esc(p.name)}</div>
+            <div style="font-size:14.5px;font-weight:500">${esc(p.name)}${contraint ? '<span class="tag-adj">ajusté</span>' : ''}</div>
             <div style="font-size:12px;color:var(--text3);margin-top:2px" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap)} € · ${d.meta.jours_restants_mois}j restants</div>
+            ${contraint ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">plafond ramené à ${fmt(p.spent_mois + p.restant_reel)} € par le breakeven</div>` : ""}
           </div>
-          <div style="font-size:16px;font-weight:500" class="tabular">${fmt(left)} €</div>
+          <div style="font-size:16px;font-weight:500" class="tabular"${left < 0 ? ' style="color:var(--red)"' : ''}>${fmt(left)} €</div>
           ${ICONS.chevron}
         </div>
         ${txList(p.txs)}
@@ -292,7 +294,7 @@ function render() {
           <span class="pole-name">${esc(p.name)}${p.contraint ? '<span class="tag-adj">ajusté</span>' : ''}</span>
           <span class="pole-amt tabular">${fmt(p.budget_venir)} € <small>à venir</small></span>
         </div>
-        ${p.breakeven_mensuel_restant != null ? `<div class="mois-note">soit ${fmt(p.breakeven_mensuel_restant)} € restants sur le mois ÷ ${d.meta.semaines_restantes_mois} semaines</div>` : ""}
+        ${p.breakeven_mensuel_restant != null ? `<div class="mois-note">soit ${fmt(p.breakeven_mensuel_restant)} € restants sur le mois ÷ ${d.meta.semaines_restantes_mois} samedis</div>` : ""}
         ${p.spent_week != null ? (() => {
           const resteReel = p.budget_venir - p.spent_week;
           const overWeek = resteReel < 0;
