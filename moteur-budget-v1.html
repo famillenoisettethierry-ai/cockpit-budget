@@ -282,12 +282,17 @@ function render() {
       const pctSemaine = Math.round(p.spent_last / p.base * 100);
       const over = p.spent_last > p.base;
       const pctMois = Math.round(p.spent_mois / p.cap_mensuel * 100);
+      const resteMensuel = p.contraint && p.breakeven_mensuel_restant != null ? p.breakeven_mensuel_restant : Math.max(0, p.cap_mensuel - p.spent_mois);
       return `<div class="row">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
           ${ring(pctMois, p.color, 36, 3.5)}
-          <div style="flex:1">
+          <div style="flex:1;min-width:0">
             <div style="font-size:11.5px;color:var(--text2)">Consommation mensuelle</div>
-            <div style="font-size:11.5px;color:var(--text3)" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap_mensuel)} € ce mois-ci</div>
+            <div style="font-size:11.5px;color:var(--text3)" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap_mensuel)} € ce mois-ci${p.contraint ? ' · ajusté breakeven' : ''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:18px;font-weight:600;${resteMensuel < 0 ? 'color:var(--red)' : ''}" class="tabular">${fmt(resteMensuel)} €</div>
+            <div style="font-size:10.5px;color:var(--text3)">sur le mois</div>
           </div>
         </div>
         <div class="pole-head">
@@ -325,18 +330,6 @@ function render() {
       <div style="flex:1;font-size:13.5px;color:var(--text2)">${esc(l.name)} <span style="font-size:10.5px">· sans plafond</span></div>
       <div style="font-size:13px;color:var(--text3)">${fmt(l.spent)} €</div>
     </div>`).join("")}
-
-    <div class="section-title">Courbes de dépenses par poste</div>
-    ${d.courbes_depenses.map(c => `<div class="chart-card">
-      <div class="chart-head">
-        <span class="chart-title">${esc(c.label)}</span>
-        ${c.points.filter(p => p.montant != null).length < 3 ? `<span class="chart-warn">${ICONS.info}historique limité</span>` : ""}
-      </div>
-      ${areaChart(c.points, c.color)}
-      ${c.footnote ? `<div class="chart-foot">${esc(c.footnote)}</div>` : ""}
-    </div>`).join("")}
-
-    ${!d.courbe_economies ? `<div class="info-box">${ICONS.info}<span>Pas encore assez d'historique réel pour une courbe d'économies ou un streak fiable. Ces blocs reviendront dès que quelques semaines de bilan seront accumulées.</span></div>` : ""}
   `;
 
   document.getElementById("app").innerHTML = html;
