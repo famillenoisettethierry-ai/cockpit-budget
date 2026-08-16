@@ -6,9 +6,9 @@
 <title>Cockpit Budget Hebdo</title>
 <style>
 :root {
-  --bg:#0A0912; --card:#15121F; --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
+  --bg:#0A0912; --card:#15121F; --border:rgba(255,255,255,.07);
   --text:#F3F1F8; --text2:#9B95AC; --text3:#635D77; --text4:#453F5C;
-  --green:#5EEAD4; --gold:#F0C674; --gray:#7C7593; --blue:#9E8CF6; --pink:#F472B6; --red:#FB7185;
+  --green:#5EEAD4; --gold:#F0C674; --blue:#9E8CF6; --pink:#F472B6; --red:#FB7185;
 }
 * { box-sizing: border-box; }
 body {
@@ -36,15 +36,9 @@ body {
 .hero-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; position:relative; font-weight: 500; }
 .hero-amount { font-size: 46px; font-weight: 600; letter-spacing: -1.4px; line-height: 1; position:relative; }
 .hero-sub { font-size: 11px; color: var(--text3); margin-top: 8px; position:relative; }
-.banner { border-radius: 26px; padding: 20px; margin-bottom: 22px; }
-.banner.warn { background: rgba(251,113,133,.06); border: 1px solid rgba(251,113,133,.18); }
-.banner-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--red); }
-.banner-body { font-size: 12px; color: #C4BFD4; line-height: 1.55; margin-bottom: 10px; }
-.banner-alt { font-size: 12px; color: var(--text2); background: rgba(255,255,255,.04); border-radius: 16px; padding: 10px 12px; }
 .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 26px; }
 .card3 { background: rgba(255,255,255,.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 20px; padding: 13px 11px; }
 .card3-name { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 10px; color: var(--text2); font-weight: 500; }
-.dot { width: 6px; height: 6px; border-radius: 3px; }
 .card3-amt { font-size: 19px; font-weight: 600; }
 .card3-delta { font-size: 10.5px; margin-top: 2px; }
 .lgauge-track { height: 5px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; width: 100%; }
@@ -62,8 +56,6 @@ body {
 .banner-mini { display: flex; gap: 8px; border-radius: 18px; padding: 10px 12px; margin-top: 10px; font-size: 12px; }
 .banner-mini.good { background: rgba(94,234,212,.08); border: 1px solid rgba(94,234,212,.18); color: #B8EEE4; }
 .banner-mini.bad { background: rgba(251,113,133,.06); border: 1px solid rgba(251,113,133,.16); color: #F0C4CA; }
-.chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 14px 12px 6px; margin-bottom: 8px; }
-.info-box { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 18px; padding: 12px 14px; margin-top: 8px; font-size: 12px; color: var(--text2); display: flex; gap: 8px; }
 svg text { font-family: inherit; }
 </style>
 </head>
@@ -79,7 +71,6 @@ const esc = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;","
 const ICONS = {
   alert: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
   sparkles: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg>`,
-  info: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
   chevron: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A414C" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`,
   cart: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6"/></svg>`,
   ticket: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z"/><path d="M13 6v2.2M13 10.9v2.2M13 15.8v2.2"/></svg>`,
@@ -111,40 +102,6 @@ function lgauge(pct, color) {
   return `<div class="lgauge-track"><div class="lgauge-fill" style="width:${pct}%;background:${color}"></div></div>`;
 }
 
-// ---- mini courbe SVG (aire + points + labels valeurs), pas de dépendance npm ----
-function areaChart(points, color, width = 400, height = 80) {
-  const vals = points.map(p => p.montant).filter(v => v != null);
-  if (vals.length === 0) return `<div style="height:${height}px;display:flex;align-items:center;justify-content:center;color:#3A414C;font-size:11px">Aucune donnée</div>`;
-  const max = Math.max(...vals, 1), min = 0;
-  const padTop = 20, padBottom = 6, padX = 10;
-  const innerH = height - padTop - padBottom;
-  const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
-  const coords = points.map((p, i) => {
-    const x = padX + i * step;
-    const y = p.montant == null ? null : padTop + innerH - ((p.montant - min) / (max - min || 1)) * innerH;
-    return { x, y, v: p.montant };
-  });
-  const valid = coords.filter(c => c.y != null);
-  let path = "", area = "";
-  if (valid.length > 1) {
-    path = "M" + valid.map(c => `${c.x},${c.y}`).join(" L");
-    area = path + ` L${valid[valid.length-1].x},${height-padBottom} L${valid[0].x},${height-padBottom} Z`;
-  }
-  const gradId = "grad" + Math.round(Math.random()*1e6);
-  const dots = valid.map(c => `
-    <circle cx="${c.x}" cy="${c.y}" r="2.6" fill="${color}" stroke="#0B0E11" stroke-width="1.2"/>
-    <text x="${c.x}" y="${c.y - 8}" text-anchor="middle" font-size="9" font-weight="500" fill="#8B92A0">${Math.round(c.v)}</text>
-  `).join("");
-  return `<svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
-    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-    </linearGradient></defs>
-    ${valid.length > 1 ? `<path d="${area}" fill="url(#${gradId})"/><path d="${path}" fill="none" stroke="${color}" stroke-width="2"/>` : ""}
-    ${dots}
-  </svg>`;
-}
-
 function txList(txs) {
   if (!txs || txs.length === 0) return `<div class="tx-empty">Aucune transaction sur cette période.</div>`;
   return `<div class="tx">${txs.map(t => `
@@ -157,25 +114,15 @@ function bravoBanner(pole) {
   return `<div class="banner-mini good">${ICONS.sparkles}<span><strong style="color:var(--green)">Bravo</strong> : ${esc(pole.bravo.texte)}</span></div>`;
 }
 function absorptionBanner(pole) {
-  if (pole.absorbe) return `<div class="banner-mini bad">${ICONS.alert}<span>-${fmt(pole.absorbe)} € absorbés suite au dépassement du pôle Autres cette semaine.</span></div>`;
-  if (pole.absorbe_ailleurs) return `<div class="banner-mini bad">${ICONS.alert}<span>Dépassement de ${fmt(pole.absorbe_ailleurs)} € absorbé sur Loisirs & sorties.</span></div>`;
+  const a = pole.absorbe;
+  if (a) return `<div class="banner-mini bad">${ICONS.alert}<span>-${fmt(a.montant)} € absorbés pour ${esc(a.cause)}.</span></div>`;
   return "";
-}
-
-function breakevenBanner(b) {
-  if (!b || !b.actif) return "";
-  return `<div class="banner warn">
-    <div class="banner-title">${ICONS.alert}<span>Mois tendu — budgets ajustés</span></div>
-    <div class="banner-body">Disponible réel : ${fmt(b.disponible)} € pour ${fmt(b.besoin_plafond)} € de plafonds théoriques restants. Certains pôles sont réduits ci-dessous plutôt que de laisser croire à un budget qui n'existe pas.</div>
-    <div class="banner-alt">Alternative : prélever <strong style="color:var(--text)">${fmt(b.montant_epargne_alternatif)} €</strong> de l'épargne existante pour garder tous les budgets à leur plafond normal ce mois-ci.</div>
-  </div>`;
 }
 
 function fmt2(n){ return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 function render() {
   const d = DATA;
-  const budgetHebdoTotal = d.poles_hebdo.reduce((s, p) => s + p.budget_venir, 0);
 
   const html = `
     <div class="head">
@@ -196,7 +143,7 @@ function render() {
       </div>
 
       <div class="hero-label">Si budgets pleins</div>
-      <div class="hero-amount tabular" style="font-size:34px;color:var(--red)">
+      <div class="hero-amount tabular" style="font-size:34px;color:${d.solde_paliers.palier2 < 0 ? 'var(--red)' : 'var(--green)'}">
         ${fmt(d.solde_paliers.palier2)} <span style="font-size:18px;color:var(--text3);font-weight:500">€</span>
       </div>
     </div>
@@ -277,7 +224,7 @@ function render() {
             <div style="font-size:12px;color:var(--text3);margin-top:2px" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap)} € · ${d.meta.jours_restants_mois}j restants</div>
             ${contraint ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">plafond ramené à ${fmt(p.spent_mois + left)} € par le breakeven</div>` : ""}
           </div>
-          <div style="font-size:16px;font-weight:500" class="tabular"${left < 0 ? ' style="color:var(--red)"' : ''}>${fmt(left)} €</div>
+          <div style="font-size:16px;font-weight:500${left < 0 ? ';color:var(--red)' : ''}" class="tabular">${fmt(left)} €</div>
           ${ICONS.chevron}
         </div>
         ${txList(p.txs)}
@@ -324,7 +271,7 @@ function render() {
         <div class="mois-note" style="color:var(--text3);opacity:.75">Bilan de la semaine passée :</div>
         ${lgauge(pctSemaine, over ? 'var(--red)' : p.color)}
         <div class="pole-meta">
-          <span style="color:${over ? 'var(--red)' : 'var(--text3)'}">${fmt(p.spent_last)} € / ${fmt(p.base)} € la semaine passée${over ? ' — dépassé' : ''}</span>
+          <span style="color:${over ? 'var(--red)' : 'var(--text3)'}">${fmt(p.spent_last)} € / ${fmt(p.base)} €${over ? ' — dépassé' : ''}</span>
           ${(!over && p.surplus > 0)
             ? `<span style="color:var(--green);font-weight:500">+${fmt(p.surplus)} € économisés</span>`
             : `<span style="color:${over ? 'var(--red)' : 'var(--green)'};font-weight:500">${pctSemaine}%</span>`}
@@ -336,11 +283,6 @@ function render() {
         ${p.txs_mois && p.txs_mois.length ? `<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;margin-bottom:2px">Tout le mois</div>${txList(p.txs_mois)}` : ""}
       </div>`;
     }).join("")}
-    ${(d.libres || []).map(l => `<div class="row" style="display:flex;align-items:center;gap:10px">
-      <div style="width:4px;height:24px;border-radius:2px;background:var(--text4)"></div>
-      <div style="flex:1;font-size:13.5px;color:var(--text2)">${esc(l.name)} <span style="font-size:10.5px">· sans plafond</span></div>
-      <div style="font-size:13px;color:var(--text3)">${fmt(l.spent)} €</div>
-    </div>`).join("")}
   `;
 
   document.getElementById("app").innerHTML = html;
