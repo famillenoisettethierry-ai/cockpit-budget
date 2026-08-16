@@ -236,13 +236,13 @@ function render() {
     })()}
 
     <div class="row" style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
-      ${ring(Math.round(d.epargne_mois.restant / d.epargne_mois.objectif * 100), d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--red)')}
+      ${ring(d.epargne_mois.restant > 0 ? 100 : 0, d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--text4)')}
       <div style="flex:1">
-        <div style="font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);display:inline-flex">${ICONS.piggy}</span>Épargne — objectif du mois</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px">Sacrifiée en premier par la cascade</div>
+        <div style="font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);display:inline-flex">${ICONS.piggy}</span>Épargne — excédent du mois</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">Ce qui reste une fois Courses, Essence, Alenya, Loisirs et Autres financés plein — pas un budget cible</div>
       </div>
-      <div style="font-size:16px;font-weight:500;color:${d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--red)'}" class="tabular">
-        ${fmt(d.epargne_mois.restant)} € <span style="font-size:11px;color:var(--text3);font-weight:400">/ ${fmt(d.epargne_mois.objectif)} €</span>
+      <div style="font-size:16px;font-weight:500;color:${d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--text4)'}" class="tabular">
+        ${fmt(d.epargne_mois.restant)} €
       </div>
     </div>
 
