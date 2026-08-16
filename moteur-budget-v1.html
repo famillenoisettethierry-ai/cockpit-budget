@@ -5,63 +5,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cockpit Budget Hebdo</title>
 <style>
-  :root {
-    --bg: #0B0E11; --card: #14181D; --border: #1D232B; --border2: #232830;
-    --text: #F5F6F7; --text2: #8B92A0; --text3: #5C6370; --text4: #3A414C;
-    --green: #4ADE9A; --gold: #C9A876; --gray: #8B92A0; --blue: #6BA8FF; --pink: #E08FA0; --red: #E2544A;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
-    background: var(--bg); color: var(--text); margin: 0;
-    padding: 20px 16px 60px; max-width: 440px; margin-inline: auto;
-    -webkit-font-smoothing: antialiased;
-  }
-  #app { opacity: 0; transition: opacity .35s; }
-  #app.mounted { opacity: 1; }
-  .row { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; margin-bottom: 8px; }
-  .section-title { font-size: 10.5px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin: 24px 0 10px; }
-  .section-title:first-of-type { margin-top: 0; }
-  .tabular { font-variant-numeric: tabular-nums; }
-  .head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-  .badge { background: rgba(107,168,255,.12); color: var(--blue); border-radius: 6px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
-  .hero-label { font-size: 12.5px; color: var(--text2); margin-bottom: 6px; }
-  .hero-amount { font-size: 46px; font-weight: 600; letter-spacing: -1.2px; line-height: 1; }
-  .hero-sub { font-size: 11.5px; color: var(--text3); margin-top: 8px; }
-  .banner { border-radius: 16px; padding: 16px; margin-bottom: 22px; }
-  .banner.warn { background: rgba(226,84,74,.08); border: 1px solid rgba(226,84,74,.25); }
-  .banner-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--red); }
-  .banner-body { font-size: 12px; color: #B8BEC8; line-height: 1.5; margin-bottom: 10px; }
-  .banner-alt { font-size: 12px; color: var(--text2); background: var(--card); border-radius: 10px; padding: 10px 12px; }
-  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
-  .card3 { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 10px; }
-  .card3-name { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; font-size: 10.5px; color: var(--text2); }
-  .dot { width: 6px; height: 6px; border-radius: 3px; }
-  .card3-amt { font-size: 19px; font-weight: 600; }
-  .card3-delta { font-size: 10.5px; margin-top: 2px; }
-  .mgauge { display: flex; align-items: center; gap: 12; gap: 12px; }
-  .lgauge-track { height: 7px; background: #20262E; border-radius: 4px; overflow: hidden; width: 100%; }
-  .lgauge-fill { height: 100%; border-radius: 4px; transition: width .6s; }
-  .tx { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
-  .tx-row { display: flex; justify-content: space-between; font-size: 11.5px; padding: 3px 0; color: var(--text2); }
-  .tx-empty { font-size: 11px; color: var(--text4); margin-top: 8px; }
-  .pole-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
-  .pole-name { font-size: 14.5px; font-weight: 500; }
-  .pole-amt { font-size: 15px; font-weight: 500; }
-  .pole-amt small { font-size: 11px; color: var(--text3); font-weight: 400; }
-  .tag-adj { font-size: 10px; color: var(--red); background: rgba(226,84,74,.12); border-radius: 5px; padding: 1.5px 6px; margin-left: 6px; }
-  .mois-note { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
-  .pole-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11.5px; }
-  .banner-mini { display: flex; gap: 8px; border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: 12.5px; }
-  .banner-mini.good { background: rgba(74,222,154,.1); border: 1px solid rgba(74,222,154,.25); color: #B8E8CE; }
-  .banner-mini.bad { background: rgba(226,84,74,.08); border: 1px solid rgba(226,84,74,.22); color: #E8B8B8; }
-  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px 12px 6px; margin-bottom: 8px; }
-  .chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; padding: 0 4px; }
-  .chart-title { font-size: 12.5px; color: #B8BEC8; font-weight: 500; }
-  .chart-warn { font-size: 9.5px; color: var(--text3); display: flex; align-items: center; gap: 3px; }
-  .chart-foot { font-size: 10.5px; color: var(--text4); padding: 0 0 8px 4px; }
-  .info-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-top: 8px; font-size: 12px; color: var(--text2); display: flex; gap: 8px; }
-  svg text { font-family: inherit; }
+:root {
+  --bg:#0A0912; --card:#15121F; --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
+  --text:#F3F1F8; --text2:#9B95AC; --text3:#635D77; --text4:#453F5C;
+  --green:#5EEAD4; --gold:#F0C674; --gray:#7C7593; --blue:#9E8CF6; --pink:#F472B6; --red:#FB7185;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(158,140,246,.4) 0%, transparent 30%),
+    radial-gradient(circle at 88% 28%, rgba(244,114,182,.32) 0%, transparent 28%),
+    radial-gradient(circle at 15% 52%, rgba(94,234,212,.16) 0%, transparent 26%),
+    radial-gradient(circle at 85% 70%, rgba(158,140,246,.3) 0%, transparent 30%),
+    radial-gradient(circle at 20% 92%, rgba(244,114,182,.24) 0%, transparent 28%),
+    #0A0912;
+  background-attachment: fixed;
+  color: var(--text); margin: 0; padding: 22px 16px 60px; max-width: 440px; margin-inline: auto;
+  -webkit-font-smoothing: antialiased;
+}
+#app { opacity: 0; transition: opacity .4s; } #app.mounted { opacity: 1; }
+.row { background: rgba(255,255,255,.04); backdrop-filter: blur(30px) saturate(160%); -webkit-backdrop-filter: blur(30px) saturate(160%); border: 1px solid var(--border); border-radius: 28px; padding: 18px 20px; margin-bottom: 10px; box-shadow: 0 1px 0 rgba(255,255,255,.04) inset; }
+.section-title { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin: 26px 6px 10px; }
+.section-title:first-of-type { margin-top: 0; }
+.tabular { font-variant-numeric: tabular-nums; }
+.head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.badge { color: var(--text3); font-size: 10px; font-weight: 600; letter-spacing: .4px; }
+.hero-block { background: rgba(255,255,255,.045); backdrop-filter: blur(32px) saturate(160%); -webkit-backdrop-filter: blur(32px) saturate(160%); border: 1px solid var(--border); border-radius: 32px; padding: 26px 22px; position: relative; overflow: hidden; }
+.hero-block::before { content:''; position:absolute; top:-70%; left:50%; transform:translateX(-50%); width:320px; height:320px; background:conic-gradient(from 180deg,var(--blue),var(--pink),var(--blue)); filter:blur(80px); opacity:.28; border-radius:50%; }
+.hero-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; position:relative; font-weight: 500; }
+.hero-amount { font-size: 46px; font-weight: 600; letter-spacing: -1.4px; line-height: 1; position:relative; }
+.hero-sub { font-size: 11px; color: var(--text3); margin-top: 8px; position:relative; }
+.banner { border-radius: 26px; padding: 20px; margin-bottom: 22px; }
+.banner.warn { background: rgba(251,113,133,.06); border: 1px solid rgba(251,113,133,.18); }
+.banner-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 12.5px; font-weight: 600; color: var(--red); }
+.banner-body { font-size: 12px; color: #C4BFD4; line-height: 1.55; margin-bottom: 10px; }
+.banner-alt { font-size: 12px; color: var(--text2); background: rgba(255,255,255,.04); border-radius: 16px; padding: 10px 12px; }
+.cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 26px; }
+.card3 { background: rgba(255,255,255,.04); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 20px; padding: 13px 11px; }
+.card3-name { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 10px; color: var(--text2); font-weight: 500; }
+.dot { width: 6px; height: 6px; border-radius: 3px; }
+.card3-amt { font-size: 19px; font-weight: 600; }
+.card3-delta { font-size: 10.5px; margin-top: 2px; }
+.lgauge-track { height: 5px; background: rgba(255,255,255,.06); border-radius: 3px; overflow: hidden; width: 100%; }
+.lgauge-fill { height: 100%; border-radius: 3px; transition: width .6s; }
+.tx { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+.tx-row { display: flex; justify-content: space-between; font-size: 11.5px; padding: 3px 0; color: var(--text2); }
+.tx-empty { font-size: 11px; color: var(--text4); margin-top: 8px; }
+.pole-head { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.pole-name { font-size: 14px; font-weight: 500; }
+.pole-amt { font-size: 15px; font-weight: 500; }
+.pole-amt small { font-size: 11px; color: var(--text3); font-weight: 400; }
+.tag-adj { font-size: 9.5px; color: var(--pink); background: rgba(244,114,182,.12); border-radius: 20px; padding: 1.5px 8px; margin-left: 6px; font-weight: 500; }
+.mois-note { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+.pole-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; }
+.banner-mini { display: flex; gap: 8px; border-radius: 18px; padding: 10px 12px; margin-top: 10px; font-size: 12px; }
+.banner-mini.good { background: rgba(94,234,212,.08); border: 1px solid rgba(94,234,212,.18); color: #B8EEE4; }
+.banner-mini.bad { background: rgba(251,113,133,.06); border: 1px solid rgba(251,113,133,.16); color: #F0C4CA; }
+.chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 14px 12px 6px; margin-bottom: 8px; }
+.info-box { background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 18px; padding: 12px 14px; margin-top: 8px; font-size: 12px; color: var(--text2); display: flex; gap: 8px; }
+svg text { font-family: inherit; }
 </style>
 </head>
 <body>
@@ -78,7 +81,18 @@ const ICONS = {
   sparkles: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg>`,
   info: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
   chevron: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A414C" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>`,
+  cart: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M3 4h2l2.2 11.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6"/></svg>`,
+  ticket: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z"/><path d="M13 6v2.2M13 10.9v2.2M13 15.8v2.2"/></svg>`,
+  grid: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,
+  fuel: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"/><path d="M3 10h10"/><path d="M13 7.2l3.3 3.3"/><path d="M18 12.3v5.7a1.5 1.5 0 0 0 3 0V9.3L18.5 6.5"/></svg>`,
+  heart: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-9.5-9C.8 7.4 2.6 4 6 4c2 0 3.4 1.1 4 2.2C10.6 5.1 12 4 14 4c3.4 0 5.2 3.4 3.5 7-2.5 4.6-9.5 9-9.5 9z"/></svg>`,
+  piggy: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.2a6 6 0 0 1 6-5.7h3.3a5.5 5.5 0 0 1 5 3.1l.2.4H20a1 1 0 0 1 1 1v1.6a1 1 0 0 1-1 1h-1.5l-.6 1.5A5.4 5.4 0 0 1 13 18h-1v2H9v-2H8a4 4 0 0 1-4-4v-1.8z"/><circle cx="15.2" cy="9.8" r=".6" fill="currentColor" stroke="none"/></svg>`,
 };
+const POLE_ICON = { courses: ICONS.cart, loisirs: ICONS.ticket, autres: ICONS.grid, essence: ICONS.fuel, alenya: ICONS.heart };
+function poleIcon(key, color, size = 16) {
+  const svg = POLE_ICON[key] || ICONS.grid;
+  return `<span style="color:${color};display:inline-flex;flex-shrink:0" >${svg.replace(/width="16" height="16"/, `width="${size}" height="${size}"`)}</span>`;
+}
 
 // ---- jauge circulaire SVG ----
 function ring(pct, color, size = 44, stroke = 4) {
@@ -169,20 +183,19 @@ function render() {
       <span class="badge">DONNÉES RÉELLES</span>
     </div>
 
-    <div style="margin-bottom:16px">
-      <div class="hero-label">Solde après prélèvements et entrées</div>
+    <div class="hero-block" style="margin-bottom:16px">
+      <div class="hero-label">Solde disponible</div>
       <div class="hero-amount tabular" style="font-size:40px;color:${d.solde_paliers.palier1 < 0 ? 'var(--red)' : 'var(--text)'}">
         ${fmt(d.solde_paliers.palier1)} <span style="font-size:21px;color:var(--text3);font-weight:500">€</span>
       </div>
-      <div class="hero-sub">${fmt(d.solde_paliers.solde_actuel)} € au ${esc(d.solde_paliers.date_releve)} · +${fmt(d.solde_paliers.entrees_connues)} € (${esc(d.solde_paliers.entrees_label)}) · -${fmt(d.solde_paliers.prelevements_restants)} € de prélèvements restants</div>
+      <div class="hero-sub">${fmt(d.solde_paliers.solde_actuel)} € au ${esc(d.solde_paliers.date_releve)} · +${fmt(d.solde_paliers.entrees_connues)} € attendus · -${fmt(d.solde_paliers.prelevements_restants)} € à venir</div>
+      ${d.solde_paliers.entrees_label ? `<div style="font-size:10.5px;color:var(--text4);margin-top:4px;line-height:1.4">${esc(d.solde_paliers.entrees_label)}</div>` : ""}
 
-      <div style="display:flex;align-items:center;gap:8px;margin:14px 0 6px">
-        <div style="flex:1;height:1px;background:var(--border)"></div>
-        <span style="font-size:10px;color:var(--text4)">− ${fmt(d.solde_paliers.budgets_pleins)} € si tous les budgets sont financés pleins</span>
-        <div style="flex:1;height:1px;background:var(--border)"></div>
+      <div style="text-align:center;margin:14px 0 8px">
+        <span style="font-size:10px;color:var(--text4)">− ${fmt(d.solde_paliers.budgets_pleins)} € si tout est financé plein</span>
       </div>
 
-      <div class="hero-label">Solde après budgets pleins</div>
+      <div class="hero-label">Si budgets pleins</div>
       <div class="hero-amount tabular" style="font-size:34px;color:var(--red)">
         ${fmt(d.solde_paliers.palier2)} <span style="font-size:18px;color:var(--text3);font-weight:500">€</span>
       </div>
@@ -196,16 +209,6 @@ function render() {
         ${d.solde_paliers.palier3 < 0
           ? `Découvert réel <strong style="color:var(--text)">malgré les budgets réduits</strong> aux planchers du cockpit`
           : `Aucun découvert prévu <strong style="color:var(--text)">si vous suivez les budgets du cockpit</strong>`}
-      </div>
-    </div>` : ""}
-
-    ${d.solde_paliers.palier2 < 0 ? `<div class="banner warn">
-      <div class="banner-title">${ICONS.alert}<span>Pour éviter le découvert, deux options</span></div>
-      <div style="font-size:12px;color:#B8BEC8;background:var(--card);border-radius:10px;padding:10px 12px;margin-bottom:8px">
-        <strong style="color:var(--text)">Option A — Budgets réduits</strong> (détail plus bas) : voir pastilles "ajusté" sur les pôles concernés. Ramène le solde à l'équilibre.
-      </div>
-      <div style="font-size:12px;color:#B8BEC8;background:var(--card);border-radius:10px;padding:10px 12px">
-        <strong style="color:var(--text)">Option B — Puiser dans l'épargne</strong> : prélever <strong style="color:var(--text)">${fmt(Math.abs(d.solde_paliers.palier2))} €</strong> pour garder tous les budgets à leur plafond normal.
       </div>
     </div>` : ""}
 
@@ -235,8 +238,8 @@ function render() {
     <div class="row" style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
       ${ring(Math.round(d.epargne_mois.restant / d.epargne_mois.objectif * 100), d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--red)')}
       <div style="flex:1">
-        <div style="font-size:14.5px;font-weight:500">Épargne — objectif du mois</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px">Premier poste sacrifié par la cascade, premier reconstitué par un surplus</div>
+        <div style="font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);display:inline-flex">${ICONS.piggy}</span>Épargne — objectif du mois</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px">Sacrifiée en premier par la cascade</div>
       </div>
       <div style="font-size:16px;font-weight:500;color:${d.epargne_mois.restant > 0 ? 'var(--green)' : 'var(--red)'}" class="tabular">
         ${fmt(d.epargne_mois.restant)} € <span style="font-size:11px;color:var(--text3);font-weight:400">/ ${fmt(d.epargne_mois.objectif)} €</span>
@@ -249,7 +252,7 @@ function render() {
         const hasResteReel = p.spent_week != null;
         const resteReel = hasResteReel ? p.budget_venir - p.spent_week : null;
         return `<div class="card3">
-          <div class="card3-name"><div class="dot" style="background:${p.color}"></div>${esc(p.name)}</div>
+          <div class="card3-name">${poleIcon(p.key, p.color, 14)}${esc(p.name)}</div>
           <div class="card3-amt tabular">${fmt(p.budget_venir)} €</div>
           ${delta !== 0 ? `<div class="card3-delta" style="color:${delta > 0 ? 'var(--green)' : 'var(--red)'}">${delta > 0 ? '+' : ''}${fmt(delta)} €</div>` : ""}
           ${hasResteReel ? `<div class="card3-delta tabular" style="color:${resteReel < 0 ? 'var(--red)' : 'var(--text3)'};margin-top:3px">${fmt(resteReel)} € reste réel</div>` : ""}
@@ -266,7 +269,7 @@ function render() {
         <div style="display:flex;align-items:center;gap:12px">
           ${ring(pct, p.color)}
           <div style="flex:1;min-width:0">
-            <div style="font-size:14.5px;font-weight:500">${esc(p.name)}${contraint ? '<span class="tag-adj">ajusté</span>' : ''}</div>
+            <div style="font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:7px">${poleIcon(p.key, p.color, 15)}${esc(p.name)}${contraint ? '<span class="tag-adj">ajusté</span>' : ''}</div>
             <div style="font-size:12px;color:var(--text3);margin-top:2px" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap)} € · ${d.meta.jours_restants_mois}j restants</div>
             ${contraint ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">plafond ramené à ${fmt(p.spent_mois + p.restant_reel)} € par le breakeven</div>` : ""}
           </div>
@@ -287,8 +290,7 @@ function render() {
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
           ${ring(pctMois, p.color, 36, 3.5)}
           <div style="flex:1;min-width:0">
-            <div style="font-size:11.5px;color:var(--text2)">Consommation mensuelle</div>
-            <div style="font-size:11.5px;color:var(--text3)" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap_mensuel)} € ce mois-ci${p.contraint ? ' · ajusté breakeven' : ''}</div>
+            <div style="font-size:12px;color:var(--text3)" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap_mensuel)} € ce mois${p.contraint ? ' · ajusté' : ''}</div>
           </div>
           <div style="text-align:right">
             <div style="font-size:18px;font-weight:600;${resteMensuel < 0 ? 'color:var(--red)' : ''}" class="tabular">${fmt(resteMensuel)} €</div>
@@ -296,7 +298,7 @@ function render() {
           </div>
         </div>
         <div class="pole-head">
-          <span class="pole-name">${esc(p.name)}${p.contraint ? '<span class="tag-adj">ajusté</span>' : ''}</span>
+          <span class="pole-name" style="display:inline-flex;align-items:center;gap:7px">${poleIcon(p.key, p.color, 15)}${esc(p.name)}${p.contraint ? '<span class="tag-adj">ajusté</span>' : ''}</span>
           <span class="pole-amt tabular">${fmt(p.budget_venir)} € <small>à venir</small></span>
         </div>
         ${p.breakeven_mensuel_restant != null ? `<div class="mois-note">soit ${fmt(p.breakeven_mensuel_restant)} € restants sur le mois ÷ ${d.meta.semaines_restantes_mois} samedis</div>` : ""}
@@ -322,7 +324,9 @@ function render() {
         </div>
         ${bravoBanner(p)}
         ${absorptionBanner(p)}
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;margin-bottom:2px">Cette semaine</div>
         ${txList(p.txs)}
+        ${p.txs_mois && p.txs_mois.length ? `<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:12px;margin-bottom:2px">Tout le mois</div>${txList(p.txs_mois)}` : ""}
       </div>`;
     }).join("")}
     ${(d.libres || []).map(l => `<div class="row" style="display:flex;align-items:center;gap:10px">
