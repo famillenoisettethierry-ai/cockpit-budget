@@ -72,7 +72,7 @@ svg text { font-family: inherit; }
 <script>
 const DATA = **DATA_PLACEHOLDER**;
 
-const fmt = (n) => (n === null || n === undefined) ? "—" : Math.round(n).toLocaleString("fr-FR");
+const fmt = (n) => (n === null || n === undefined || Number.isNaN(Number(n))) ? "—" : Math.round(Number(n)).toLocaleString("fr-FR");
 const esc = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 // ---- icônes SVG minimales (pas de dépendance npm) ----
@@ -262,7 +262,7 @@ function render() {
 
     <div class="section-title">Budgets mensuels — ${esc(d.meta.mois_label)}</div>
     ${d.poles_mensuels.map(p => {
-      const pct = Math.round(p.spent_mois / p.cap * 100);
+      const pct = (p.spent_mois != null && p.cap) ? Math.round(p.spent_mois / p.cap * 100) : 0;
       const contraint = p.restant_reel != null;
       const left = contraint ? p.restant_reel : (p.cap - p.spent_mois);
       return `<div class="row">
@@ -282,10 +282,13 @@ function render() {
 
     <div class="section-title">Pôles hebdo — bilan ${esc(d.meta.semaine_ecoulee_label)} &amp; budget à venir</div>
     ${d.poles_hebdo.map(p => {
-      const pctSemaine = Math.round(p.spent_last / p.base * 100);
+      const pctSemaine = (p.spent_last != null && p.base) ? Math.round(p.spent_last / p.base * 100) : 0;
       const over = p.spent_last > p.base;
-      const pctMois = Math.round(p.spent_mois / p.cap_mensuel * 100);
-      const resteMensuel = p.contraint && p.breakeven_mensuel_restant != null ? p.breakeven_mensuel_restant : Math.max(0, p.cap_mensuel - p.spent_mois);
+      const pctMois = (p.spent_mois != null && p.cap_mensuel) ? Math.round(p.spent_mois / p.cap_mensuel * 100) : 0;
+      const bkRestant = Number(p.breakeven_mensuel_restant);
+      const resteMensuel = (p.contraint && p.breakeven_mensuel_restant != null && !Number.isNaN(bkRestant))
+        ? bkRestant
+        : Math.max(0, (Number(p.cap_mensuel) || 0) - (Number(p.spent_mois) || 0));
       return `<div class="row">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
           ${ring(pctMois, p.color, 36, 3.5)}
