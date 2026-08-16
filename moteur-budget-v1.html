@@ -263,15 +263,19 @@ function render() {
     <div class="section-title">Budgets mensuels — ${esc(d.meta.mois_label)}</div>
     ${d.poles_mensuels.map(p => {
       const pct = (p.spent_mois != null && p.cap) ? Math.round(p.spent_mois / p.cap * 100) : 0;
-      const contraint = p.restant_reel != null;
-      const left = contraint ? p.restant_reel : (p.cap - p.spent_mois);
+      const normalLeft = (p.cap != null && p.spent_mois != null) ? Math.max(0, p.cap - p.spent_mois) : null;
+      const rr = Number(p.restant_reel);
+      // Un plafond "ramené" par le breakeven ne peut que RÉDUIRE le reste normal, jamais l'augmenter.
+      // Une valeur incohérente (>= reste normal, ou non numérique) est traitée comme non contrainte.
+      const contraint = p.restant_reel != null && !Number.isNaN(rr) && normalLeft != null && rr < normalLeft;
+      const left = contraint ? rr : normalLeft;
       return `<div class="row">
         <div style="display:flex;align-items:center;gap:12px">
           ${ring(pct, p.color)}
           <div style="flex:1;min-width:0">
             <div style="font-size:14.5px;font-weight:500;display:flex;align-items:center;gap:7px">${poleIcon(p.key, p.color, 15)}${esc(p.name)}${contraint ? '<span class="tag-adj">ajusté</span>' : ''}</div>
             <div style="font-size:12px;color:var(--text3);margin-top:2px" class="tabular">${fmt(p.spent_mois)} € / ${fmt(p.cap)} € · ${d.meta.jours_restants_mois}j restants</div>
-            ${contraint ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">plafond ramené à ${fmt(p.spent_mois + p.restant_reel)} € par le breakeven</div>` : ""}
+            ${contraint ? `<div style="font-size:11px;color:var(--text3);margin-top:3px">plafond ramené à ${fmt(p.spent_mois + left)} € par le breakeven</div>` : ""}
           </div>
           <div style="font-size:16px;font-weight:500" class="tabular"${left < 0 ? ' style="color:var(--red)"' : ''}>${fmt(left)} €</div>
           ${ICONS.chevron}
@@ -285,10 +289,10 @@ function render() {
       const pctSemaine = (p.spent_last != null && p.base) ? Math.round(p.spent_last / p.base * 100) : 0;
       const over = p.spent_last > p.base;
       const pctMois = (p.spent_mois != null && p.cap_mensuel) ? Math.round(p.spent_mois / p.cap_mensuel * 100) : 0;
+      const normalResteMois = Math.max(0, (Number(p.cap_mensuel) || 0) - (Number(p.spent_mois) || 0));
       const bkRestant = Number(p.breakeven_mensuel_restant);
-      const resteMensuel = (p.contraint && p.breakeven_mensuel_restant != null && !Number.isNaN(bkRestant))
-        ? bkRestant
-        : Math.max(0, (Number(p.cap_mensuel) || 0) - (Number(p.spent_mois) || 0));
+      const bkValide = p.contraint && p.breakeven_mensuel_restant != null && !Number.isNaN(bkRestant) && bkRestant < normalResteMois;
+      const resteMensuel = bkValide ? bkRestant : normalResteMois;
       return `<div class="row">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
           ${ring(pctMois, p.color, 36, 3.5)}
@@ -304,7 +308,7 @@ function render() {
           <span class="pole-name" style="display:inline-flex;align-items:center;gap:7px">${poleIcon(p.key, p.color, 15)}${esc(p.name)}${p.contraint ? '<span class="tag-adj">ajusté</span>' : ''}</span>
           <span class="pole-amt tabular">${fmt(p.budget_venir)} € <small>à venir</small></span>
         </div>
-        ${p.breakeven_mensuel_restant != null ? `<div class="mois-note">soit ${fmt(p.breakeven_mensuel_restant)} € restants sur le mois ÷ ${d.meta.semaines_restantes_mois} samedis</div>` : ""}
+        ${bkValide ? `<div class="mois-note">soit ${fmt(resteMensuel)} € restants sur le mois ÷ ${d.meta.semaines_restantes_mois} samedis</div>` : ""}
         ${p.spent_week != null ? (() => {
           const resteReel = p.budget_venir - p.spent_week;
           const overWeek = resteReel < 0;
